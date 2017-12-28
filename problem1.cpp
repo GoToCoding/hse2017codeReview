@@ -1,14 +1,15 @@
 #include <iostream>
-using namespace std;
+#include <utility>    //need for std::swap
 
+template<typename T>
 class Elem {
 private:
-    int key;
+    T key;
 
 public:
-    Elem* next;
+    Elem<T>* next;
 
-    explicit Elem (int key):
+    explicit Elem (T key):
             key(key),
             next(nullptr) {
     }
@@ -18,56 +19,53 @@ public:
     }
 };
 
+template<typename T>
 class List {
 private:
-    Elem* first;
+    Elem<T>* first;
+    Elem<T>* last;
 
 public:
-    List ():first(nullptr) {}
+    List ():
+        first(nullptr),
+        last(nullptr) {}
 
-    explicit List (int x) {
-        first = new Elem(x);
+    explicit List (const T& x) {
+        first = new Elem<T>(x);
+        last = first;
     }
 
-    void add(int x) {
-        Elem* tmp = first;
-        first = new Elem(x);
-        first->next = tmp;
+    void add(const T& x) {
+        Elem<T>* elem = new Elem<T>(x);
+        add(elem);
     }
 
-    void add(Elem* elem) {
-        if (first) {
-            elem->next = first;
+    void add(Elem<T>* elem) {
+        elem->next = nullptr;
+        if (!first) {
             first = elem;
+            last = first;
         } else {
-            first = elem;
-            first->next = nullptr;
+            last->next = elem;
+            last = elem;
         }
     }
 
     void print() const {
-        Elem* tmp = first;
+        Elem<T>* tmp = first;
         while (tmp) {
-            cout << tmp->getKey() << " ";
+            std::cout << tmp->getKey() << " ";
             tmp = tmp->next;
         }
-        cout << endl;
+        std::cout << std::endl;
     }
 
-    void mergeByOrder(const List& other) {
+    void merge(const List& other) {
         List res;
-        Elem* iter1 = this->first;
-        Elem* iter2 = other.first;
-        while (iter1 || iter2) {
-            if (iter1 && iter2) {
-                if (iter1->getKey() < iter2->getKey()) {
-                    res.add(iter1->getKey());
-                    iter1 = iter1->next;
-                } else {
-                    res.add(iter2->getKey());
-                    iter2 = iter2->next;
-                }
-            } else if (iter1) {
+        Elem<T> *iter1 = this->first;
+        Elem<T> *iter2 = other.first;
+        while (iter1 && iter2) {
+            if (iter1->getKey() < iter2->getKey()) {
                 res.add(iter1->getKey());
                 iter1 = iter1->next;
             } else {
@@ -75,43 +73,40 @@ public:
                 iter2 = iter2->next;
             }
         }
-        res.reverse();
-        swap(first, res.first);
-    }
-
-    void reverse() {
-        List tmp;
-        while (first) {
-            Elem* next = first->next;
-            tmp.add(first);
-            first = next;
+        while (iter1) {
+            res.add(iter1->getKey());
+            iter1 = iter1->next;
         }
-        swap(first, tmp.first);
+        while (iter2) {
+            res.add(iter2->getKey());
+            iter2 = iter2->next;
+        }
+        std::swap(first, res.first);
     }
 
     void mergeSort() {
-        size_t length = 0;
-        Elem* iter = first;
-        while (iter) {
-            length++;
-            iter = iter->next;
-        }
-        if (length <= 1)
-            return;
+        if (first == last) return;
+        Elem<T>* iter1 = first;
+        Elem<T>* iter2 = first;
         List secondPart;
-        for (size_t i = 0; 2 * i < length; ++i) {
-            Elem* next = first->next;
-            secondPart.add(first);
-            first = next;
+
+        while (iter2->next) {
+            iter2 = iter2->next;
+            Elem<T> *tmp = iter1->next;
+            secondPart.add(iter1);
+            iter1 = tmp;
+            if (iter2->next) iter2 = iter2->next;
         }
+        first = iter1;
+
+        this->mergeSort();
         secondPart.mergeSort();
-        mergeSort();
-        mergeByOrder(secondPart);
+        merge(secondPart);
     }
 
     ~List() {
         while (first) {
-            Elem* next = first->next;
+            Elem<T>* next = first->next;
             delete first;
             first = next;
         }
@@ -121,12 +116,12 @@ public:
 int main() {
 
     int n;
-    cin >> n;
-    List list;
+    std::cin >> n;
+    List<int> list;
 
     for (int i = 0; i < n; i++) {
         int x;
-        cin >> x;
+        std::cin >> x;
         list.add(x);
     }
 
