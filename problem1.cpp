@@ -65,19 +65,12 @@ public:
         Elem<T> *iter1 = this->first;
         Elem<T> *iter2 = other.first;
         while (iter1 && iter2) {
-            if (iter1->getKey() < iter2->getKey()) {
-                res.add(iter1->getKey());
-                iter1 = iter1->next;
-            } else {
-                res.add(iter2->getKey());
-                iter2 = iter2->next;
-            }
-        }
-        while (iter1) {
+            if (iter1->getKey() > iter2->getKey())
+                std::swap(iter1, iter2);
             res.add(iter1->getKey());
             iter1 = iter1->next;
         }
-        while (iter2) {
+        while(iter2) {
             res.add(iter2->getKey());
             iter2 = iter2->next;
         }
