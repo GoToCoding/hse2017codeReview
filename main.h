@@ -111,7 +111,7 @@ public:
             throw std::out_of_range("");
         }
         size_t pos = hash(key) % table.size();
-        for (auto it : table[pos]) {
+        for (const auto& it : table[pos]) {
             if (it->first == key) {
                 return it->second;
             }
