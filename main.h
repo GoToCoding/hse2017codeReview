@@ -33,13 +33,8 @@ public:
         }
     }
 
-    HashMap(const std::initializer_list<pair<const KeyType, ValueType>>& elements, Hash hash = Hash()): hash(hash) {
-        tableSize = 0;
-        table = vector<list<typename list<pair<const KeyType, ValueType>>::iterator>>(1);
-        for (auto elem : elements) {
-            insert(elem);
-        }
-    }
+    HashMap(const std::initializer_list<pair<const KeyType, ValueType>>& elements, Hash hash = Hash())
+            :  HashMap(elements.begin(), elements.end(), hash) {}
 
     size_t size() const {
         return tableSize;
@@ -56,7 +51,7 @@ public:
     void insert(const pair<const KeyType, ValueType>& elem) {
         size_t pos = hash(elem.first) % table.size();
         bool exist = false;
-        for (auto p : table[pos]) {
+        for (const auto& p : table[pos]) {
             if (p->first == elem.first) exist = true;
         }
         if (!exist) {
@@ -106,7 +101,7 @@ public:
         return elements.end();
     }
 
-    ValueType& operator[] (const KeyType& key) {
+    ValueType& operator[](const KeyType& key) {
         insert({key, ValueType()});
         return find(key)->second;
     }
@@ -128,7 +123,7 @@ public:
         this->hash = other.hash;
         this->elements.clear();
         this->tableSize = other.tableSize;
-        for (auto it : other.elements) {
+        for (const auto& it : other.elements) {
             this->elements.emplace_back(it);
         }
         return *this;
@@ -142,7 +137,7 @@ public:
 
     iterator find(const KeyType &key) {
         size_t pos = hash(key) % table.size();
-        for (auto it : table[pos]) {
+        for (const auto& it : table[pos]) {
             if (it->first == key) {
                 return it;
             }
@@ -152,7 +147,7 @@ public:
 
     const_iterator find(const KeyType &key) const {
         size_t pos = hash(key) % table.size();
-        for (auto it : table[pos]) {
+        for (const auto& it : table[pos]) {
             if (it->first == key) {
                 return it;
             }
