@@ -25,6 +25,42 @@ const int inf = 2e9;
 vector<int> d, p;
 vector<pair<int, int>> parent;
 
+void fordBellman() {
+    int N = sink + 1;
+
+    for (int i = 1; i < N; i++) d[i] = inf;
+    d[source] = 0;
+    parent[source].first = -1;
+
+    int minDist[N][N];
+    pair<int, int> par[N][N];
+    for (int i = 1; i < N; i++) {
+        for (int j = 0; j < N; j++)
+            minDist[i][j] = inf;
+    }
+    minDist[source][0] = 0;
+    for (int i = 1; i < N; i++) {
+        for (int edgeId = 0; edgeId < (int)edges.size(); edgeId++) {
+            int v = edges[edgeId].to;
+            int u = edges[edgeId ^ 1].to;
+            int costUV = edges[edgeId].cost;
+            if (edges[edgeId].capacity == edges[edgeId].flow) continue;
+            if (minDist[u][i - 1] < inf && minDist[v][i] > minDist[u][i - 1] + costUV) {
+                minDist[v][i] = minDist[u][i - 1] + costUV;
+                par[v][i] = {u, edgeId};
+            }
+        }
+    }
+    for (int i = 1; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            if (d[i] > minDist[i][j]) {
+                d[i] = minDist[i][j];
+                parent[i] = par[i][j];
+            }
+        }
+    }
+}
+
 void dijkstra() {
     for (int i = 1; i <= sink; i++) d[i] = inf;
     d[source] = 0;
@@ -60,7 +96,6 @@ vector<pair<int, int>> find_way(int v) {
     }
     for (int id : g[v]) {
         int to = edges[id].to;
-        int capacity = edges[id].capacity;
         int flow = edges[id].flow;
         if (used[to]) continue;
         if (flow > 0) {
@@ -77,7 +112,6 @@ vector<pair<int, int>> find_way(int v) {
 
 int main() {
     ios_base::sync_with_stdio(0);
-    //freopen("input.txt", "r", stdin);
 
     int n, m, k;
     cin >> n >> m >> k;
@@ -105,7 +139,8 @@ int main() {
 
     }
 
-    dijkstra();
+    fordBellman();
+
     for (int i = 0; i <= sink; i++) p[i] = d[i];
 
     int c = 0;
