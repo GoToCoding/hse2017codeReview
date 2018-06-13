@@ -93,7 +93,7 @@ vector<pair<int, int>> find_way(int v) {
             if (ans.empty()) continue;
             edges[id].flow--;
             edges[id ^ 1].flow++;
-            ans.emplace_back({v, id});
+            ans.push_back({v, id});
             return ans;
         }
     }
@@ -156,7 +156,7 @@ int main() {
     }
     std::cout << std::fixed << std::setprecision(10) << static_cast<long double>(c) / k << '\n';
     for (int pathNum = 0; pathNum < k; pathNum++) {
-        for (int i = 1; i <= sink; i++) used[i] = false;
+        std::fill(used.begin(), used.end(), false);
         vector<pair<int, int>> way = find_way(source);
         std::reverse(way.begin(), way.end());
         std::cout << way.size() - 1 << " ";
