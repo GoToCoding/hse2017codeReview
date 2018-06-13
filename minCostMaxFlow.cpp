@@ -1,13 +1,11 @@
-#include <bits/stdc++.h>
-typedef long double ld;
-typedef long long ll;
-#define v1 (2 * v + 1)
-#define v2 (2 * v + 2)
-#define d(x) cerr << #x << ": " << x << endl;
-using namespace std;
-template<class T> ostream& operator<<(ostream& os, vector<T>& v) {for (auto i : v) os << i << " "; return os;}
-template<class T> ostream& operator<<(ostream& os, set<T>& v) {for (auto i : v) os << i << " "; return os;}
-template<class T, class R> ostream& operator<<(ostream& os, pair<T, R>& v) {os << '(' << v.first << ' ' << v.second << ')' << ' '; return os;}
+#include <algorithm>
+#include <iomanip>
+#include <iostream>
+#include <queue>
+
+using std::pair;
+using std::priority_queue;
+using std::vector;
 
 struct Edge {
     int to;
@@ -21,25 +19,22 @@ vector<vector<int>> g;
 int source;
 int sink;
 
-const int inf = 2e9;
+const int inf = 2000000000; //  компилятор на ЯКе ругается, если написать 2'000'000'000
 vector<int> d, p;
 vector<pair<int, int>> parent;
 
 void fordBellman() {
-    int N = sink + 1;
-
-    for (int i = 1; i < N; i++) d[i] = inf;
+    for (int i = 1; i <= sink; i++) d[i] = inf;
     d[source] = 0;
     parent[source].first = -1;
 
-    int minDist[N][N];
-    pair<int, int> par[N][N];
-    for (int i = 1; i < N; i++) {
-        for (int j = 0; j < N; j++)
+    int minDist[sink + 1][sink + 1];
+    for (int i = 1; i <= sink; i++) {
+        for (int j = 0; j <= sink; j++)
             minDist[i][j] = inf;
     }
     minDist[source][0] = 0;
-    for (int i = 1; i < N; i++) {
+    for (int i = 1; i <= sink; i++) {
         for (int edgeId = 0; edgeId < (int)edges.size(); edgeId++) {
             int v = edges[edgeId].to;
             int u = edges[edgeId ^ 1].to;
@@ -47,15 +42,10 @@ void fordBellman() {
             if (edges[edgeId].capacity == edges[edgeId].flow) continue;
             if (minDist[u][i - 1] < inf && minDist[v][i] > minDist[u][i - 1] + costUV) {
                 minDist[v][i] = minDist[u][i - 1] + costUV;
-                par[v][i] = {u, edgeId};
-            }
-        }
-    }
-    for (int i = 1; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            if (d[i] > minDist[i][j]) {
-                d[i] = minDist[i][j];
-                parent[i] = par[i][j];
+                if (minDist[v][i] < d[v]) {
+                    d[v] = minDist[v][i];
+                    parent[v] = {u, edgeId};
+                }
             }
         }
     }
@@ -103,7 +93,7 @@ vector<pair<int, int>> find_way(int v) {
             if (ans.empty()) continue;
             edges[id].flow--;
             edges[id ^ 1].flow++;
-            ans.push_back({v, id});
+            ans.emplace_back({v, id});
             return ans;
         }
     }
@@ -111,10 +101,9 @@ vector<pair<int, int>> find_way(int v) {
 }
 
 int main() {
-    ios_base::sync_with_stdio(0);
 
     int n, m, k;
-    cin >> n >> m >> k;
+    std::cin >> n >> m >> k;
     source = 1;
     sink = n;
 
@@ -126,9 +115,10 @@ int main() {
 
     for (int i = 0, now = 0; i < m; i++, now += 4) {
         int a, b, c;
-        cin >> a >> b >> c;
-        g[a].push_back(now + 0);
+        std::cin >> a >> b >> c;
+        g[a].push_back(now);
         g[b].push_back(now + 1);
+
         edges.push_back({b, 1, 0, c});
         edges.push_back({a, 0, 0, -c});
 
@@ -161,18 +151,18 @@ int main() {
         for (int i = 0; i <= sink; i++) p[i] = d[i];
     }
     if (f < k) {
-        cout << "-1\n";
+        std::cout << "-1\n";
         return 0;
     }
-    cout << fixed << setprecision(10) << (long double)c / k << endl;
+    std::cout << std::fixed << std::setprecision(10) << static_cast<long double>(c) / k << '\n';
     for (int pathNum = 0; pathNum < k; pathNum++) {
         for (int i = 1; i <= sink; i++) used[i] = false;
         vector<pair<int, int>> way = find_way(source);
-        reverse(way.begin(), way.end());
-        cout << way.size() - 1 << " ";
+        std::reverse(way.begin(), way.end());
+        std::cout << way.size() - 1 << " ";
         for (auto& p : way)
             if (p.second != -1)
-                cout << p.second / 4 + 1 << " ";
-        cout << endl;
+                std::cout << p.second / 4 + 1 << " ";
+        std::cout << '\n';
     }
 }
